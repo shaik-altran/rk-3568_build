@@ -47,11 +47,11 @@ U-BOOT_EXPORTS ?= \
 
 U-BOOT_DEFCONFIG_FILES := \
 	$(U-BOOT_PATH)/configs/evb-rk3568_defconfig \
-	$(ROOT)/rk-3568_build/kconfig/TB-rk3568.config
+	$(ROOT)/build/kconfig/TB-rk3568.config
 
 U-BOOT_PATCHES := \
-	$(ROOT)/rk-3568_build/0001-2USB_working.patch \
-	$(ROOT)/rk-3568_build/0002-DFU_Patch.patch
+	$(ROOT)/build/0001-2USB_working.patch \
+	$(ROOT)/build/0002-DFU_Patch.patch
 
 
 .PHONY: u-boot
