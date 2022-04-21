@@ -65,7 +65,7 @@ u-boot: rkbin
 	
 	rm -rf $(BINARIES_PATH)/u-boot
 	mkdir -p $(BINARIES_PATH)/u-boot
-	cd $(U_BOOT_PATH) && \
+	cd $(U-BOOT_PATH) && \
 		scripts/kconfig/merge_config.sh -O $(BINARIES_PATH)/u-boot $(U-BOOT_DEFCONFIG_FILES)
 	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) O=$(BINARIES_PATH)/u-boot BL31=$(ROOT)/rkbin/bin/rk35/rk3568_bl31_v1.25.elf all
 
