@@ -78,5 +78,6 @@ u-boot: rkbin
 
 .PHONY: u-boot-clean
 u-boot-clean:
+	rm -rf $(BINARIES_PATH)/u-boot
 	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) distclean
 
