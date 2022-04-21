@@ -69,9 +69,8 @@ u-boot: rkbin
 	cd $(U-BOOT_PATH) && \
 		scripts/kconfig/merge_config.sh -O $(BINARIES_PATH)/u-boot $(U-BOOT_DEFCONFIG_FILES)
 	
-	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) O=$(BINARIES_PATH)/u-boot BL31=$(ROOT)/rkbin/bin/rk35/rk3568_bl31_v1.25.elf all
-
-	$(BINARIES_PATH)/u-boot ./tools/mkimage -n "rk3568" -T rksd -d $(ROOT)/rkbin/bin/rk35/rk3568_ddr_1560MHz_v1.08.bin:spl/u-boot-spl.bin idbloader.img
+	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) O=$(BINARIES_PATH)/u-boot BL31=$(ROOT)/rkbin/bin/rk35/rk3568_bl31_v1.25.elf all && \
+		cd $(BINARIES_PATH)/u-boot ./tools/mkimage -n "rk3568" -T rksd -d $(ROOT)/rkbin/bin/rk35/rk3568_ddr_1560MHz_v1.08.bin:spl/u-boot-spl.bin idbloader.img
 
 
 
