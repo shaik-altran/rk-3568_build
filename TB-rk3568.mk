@@ -65,9 +65,14 @@ u-boot: rkbin
 	
 	rm -rf $(BINARIES_PATH)/u-boot
 	mkdir -p $(BINARIES_PATH)/u-boot
+	
 	cd $(U-BOOT_PATH) && \
 		scripts/kconfig/merge_config.sh -O $(BINARIES_PATH)/u-boot $(U-BOOT_DEFCONFIG_FILES)
+	
 	$(U-BOOT_EXPORTS) $(MAKE) -C $(U-BOOT_PATH) O=$(BINARIES_PATH)/u-boot BL31=$(ROOT)/rkbin/bin/rk35/rk3568_bl31_v1.25.elf all
+
+	./tools/mkimage -n "rk3568" -T rksd -d $(ROOT)/rkbin/bin/rk35/rk3568_ddr_1560MHz_v1.08.bin:spl/u-boot-spl.bin idbloader.img
+
 
 
 .PHONY: u-boot-clean
