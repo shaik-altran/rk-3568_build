@@ -1,0 +1,694 @@
+From 9834ceac617b3c5f2d2494292277d53f1fe028e3 Mon Sep 17 00:00:00 2001
+From: shaik-altran <fairozshaik4c9@gmail.com>
+Date: Mon, 18 Apr 2022 22:40:25 +0530
+Subject: [PATCH 1/2] 2USB_working
+
+---
+ arch/arm/dts/rk3568-evb.dts              |   1 +
+ arch/arm/dts/rk3568-u-boot.dtsi          |  50 +++
+ arch/arm/dts/rk3568.dtsi                 | 387 +++++++++++++++++++++++
+ cmd/usb.c                                |   6 +
+ include/configs/rk3568_common.h          |  18 +-
+ include/configs/rockchip-common.h        |  26 +-
+ include/dt-bindings/power/rk3568-power.h |  32 ++
+ 7 files changed, 507 insertions(+), 13 deletions(-)
+ create mode 100644 include/dt-bindings/power/rk3568-power.h
+
+diff --git a/arch/arm/dts/rk3568-evb.dts b/arch/arm/dts/rk3568-evb.dts
+index 6978655709..a755de77fe 100644
+--- a/arch/arm/dts/rk3568-evb.dts
++++ b/arch/arm/dts/rk3568-evb.dts
+@@ -8,6 +8,7 @@
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/pinctrl/rockchip.h>
+ #include "rk3568.dtsi"
++#include "rk3568-u-boot.dtsi"
+ 
+ / {
+ 	model = "Rockchip RK3568 EVB1 DDR4 V10 Board";
+diff --git a/arch/arm/dts/rk3568-u-boot.dtsi b/arch/arm/dts/rk3568-u-boot.dtsi
+index 5a80dda275..eba4d3647f 100644
+--- a/arch/arm/dts/rk3568-u-boot.dtsi
++++ b/arch/arm/dts/rk3568-u-boot.dtsi
+@@ -40,6 +40,56 @@
+ 	status = "okay";
+ };
+ 
++&usb2phy0_grf {
++	u-boot,dm-pre-reloc;
++	status = "okay";
++};
++
++&usbdrd30 {
++	u-boot,dm-pre-reloc;
++	status = "okay";
++};
++
++&usbdrd_dwc3 {
++	u-boot,dm-pre-reloc;
++	status = "okay";
++};
++
++&usbhost30 {
++	u-boot,dm-pre-reloc;
++	status = "okay";
++};
++
++&usbhost_dwc3 {
++	u-boot,dm-pre-reloc;
++	status = "okay";
++};
++
++&usb2phy0 {
++	u-boot,dm-pre-reloc;
++	status = "okay";
++};
++
++&u2phy0_otg {
++	u-boot,dm-pre-reloc;
++	status = "okay";
++};
++
++&u2phy0_host {
++	u-boot,dm-pre-reloc;
++	status = "okay";
++};
++&u2phy1_otg {
++	u-boot,dm-pre-reloc;
++	status = "okay";
++};
++
++&u2phy1_host {
++	u-boot,dm-pre-reloc;
++	status = "okay";
++};
++
++
+ &sdmmc0 {
+ 	u-boot,dm-spl;
+ 	status = "okay";
+diff --git a/arch/arm/dts/rk3568.dtsi b/arch/arm/dts/rk3568.dtsi
+index 12a071e679..c2ea942a83 100644
+--- a/arch/arm/dts/rk3568.dtsi
++++ b/arch/arm/dts/rk3568.dtsi
+@@ -10,6 +10,7 @@
+ #include <dt-bindings/pinctrl/rockchip.h>
+ #include <dt-bindings/soc/rockchip,boot-mode.h>
+ #include <dt-bindings/thermal/thermal.h>
++#include <dt-bindings/power/rk3568-power.h>
+ 
+ / {
+ 	compatible = "rockchip,rk3568";
+@@ -195,6 +196,69 @@
+ 			reg = <0x0 0x100>;
+ 		};
+ 	};
++	usbdrd30: usbdrd {
++		compatible = "rockchip,rk3568-dwc3", "rockchip,rk3399-dwc3";
++		clocks = <&cru CLK_USB3OTG0_REF>, <&cru CLK_USB3OTG0_SUSPEND>,
++			 <&cru ACLK_USB3OTG0>;
++		clock-names = "ref_clk", "suspend_clk",
++			      "bus_clk";
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++		status = "disabled";
++
++		usbdrd_dwc3: dwc3@fcc00000 {
++			compatible = "snps,dwc3";
++			reg = <0x0 0xfcc00000 0x0 0x400000>;
++			interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>;
++			dr_mode = "host";
++			phys = <&u2phy0_otg>;
++			phy-names = "usb2-phy";
++			phy_type = "utmi_wide";
++			power-domains = <&power RK3568_PD_PIPE>;
++			resets = <&cru SRST_USB3OTG0>;
++			reset-names = "usb3-otg";
++			snps,dis_enblslpm_quirk;
++			snps,dis-u2-freeclk-exists-quirk;
++			snps,dis_u2_susphy_quirk;
++			snps,dis-del-phy-power-chg-quirk;
++			snps,dis-tx-ipgap-linecheck-quirk;
++			snps,xhci-trb-ent-quirk;
++			status = "disabled";
++		};
++	};
++
++	usbhost30: usbhost {
++		compatible = "rockchip,rk3568-dwc3", "rockchip,rk3399-dwc3";
++		clocks = <&cru CLK_USB3OTG1_REF>, <&cru CLK_USB3OTG1_SUSPEND>,
++			 <&cru ACLK_USB3OTG1>;
++		clock-names = "ref_clk", "suspend_clk",
++			      "bus_clk";
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++		status = "disabled";
++
++		usbhost_dwc3: dwc3@fd000000 {
++			compatible = "snps,dwc3";
++			reg = <0x0 0xfd000000 0x0 0x400000>;
++			interrupts = <GIC_SPI 170 IRQ_TYPE_LEVEL_HIGH>;
++			dr_mode = "host";
++			phys = <&u2phy0_host>;
++			phy-names = "usb2-phy";
++			phy_type = "utmi_wide";
++			power-domains = <&power RK3568_PD_PIPE>;
++			resets = <&cru SRST_USB3OTG1>;
++			reset-names = "usb3-host";
++			snps,dis_enblslpm_quirk;
++			snps,dis-u2-freeclk-exists-quirk;
++			snps,dis_u2_susphy_quirk;
++			snps,dis-del-phy-power-chg-quirk;
++			snps,dis-tx-ipgap-linecheck-quirk;
++			snps,xhci-trb-ent-quirk;
++			status = "disabled";
++		};
++	};
+ 
+ 	gic: interrupt-controller@fd400000 {
+ 		compatible = "arm,gic-v3";
+@@ -207,7 +271,53 @@
+ 		mbi-ranges = <296 24>;
+ 		msi-controller;
+ 	};
++	usb_host0_ehci: usb@fd800000 {
++		compatible = "generic-ehci";
++		reg = <0x0 0xfd800000 0x0 0x40000>;
++		interrupts = <GIC_SPI 130 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&cru HCLK_USB2HOST0>, <&cru HCLK_USB2HOST0_ARB>,
++			 <&cru PCLK_USB>, <&usb2phy1>;
++		clock-names = "usbhost", "arbiter", "pclk", "utmi";
++		phys = <&u2phy1_otg>;
++		phy-names = "usb2-phy";
++		status = "disabled";
++	};
++
++	usb_host0_ohci: usb@fd840000 {
++		compatible = "generic-ohci";
++		reg = <0x0 0xfd840000 0x0 0x40000>;
++		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&cru HCLK_USB2HOST0>, <&cru HCLK_USB2HOST0_ARB>,
++			 <&cru PCLK_USB>, <&usb2phy1>;
++		clock-names = "usbhost", "arbiter", "pclk", "utmi";
++		phys = <&u2phy1_otg>;
++		phy-names = "usb2-phy";
++		status = "disabled";
++	};
++
++	usb_host1_ehci: usb@fd880000 {
++		compatible = "generic-ehci";
++		reg = <0x0 0xfd880000 0x0 0x40000>;
++		interrupts = <GIC_SPI 133 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&cru HCLK_USB2HOST1>, <&cru HCLK_USB2HOST1_ARB>,
++			 <&cru PCLK_USB>, <&usb2phy1>;
++		clock-names = "usbhost", "arbiter", "pclk", "utmi";
++		phys = <&u2phy1_host>;
++		phy-names = "usb2-phy";
++		status = "disabled";
++	};
+ 
++	usb_host1_ohci: usb@fd8c0000 {
++		compatible = "generic-ohci";
++		reg = <0x0 0xfd8c0000 0x0 0x40000>;
++		interrupts = <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&cru HCLK_USB2HOST1>, <&cru HCLK_USB2HOST1_ARB>,
++			 <&cru PCLK_USB>, <&usb2phy1>;
++		clock-names = "usbhost", "arbiter", "pclk", "utmi";
++		phys = <&u2phy1_host>;
++		phy-names = "usb2-phy";
++		status = "disabled";
++	};
+ 	pmugrf: syscon@fdc20000 {
+ 		compatible = "rockchip,rk3568-pmugrf", "syscon", "simple-mfd";
+ 		reg = <0x0 0xfdc20000 0x0 0x10000>;
+@@ -218,6 +328,15 @@
+ 		reg = <0x0 0xfdc60000 0x0 0x10000>;
+ 	};
+ 
++	usb2phy0_grf: syscon@fdca0000 {
++		compatible = "rockchip,rk3568-usb2phy-grf", "syscon";
++		reg = <0x0 0xfdca0000 0x0 0x8000>;
++	};
++
++	usb2phy1_grf: syscon@fdca8000 {
++		compatible = "rockchip,rk3568-usb2phy-grf", "syscon";
++		reg = <0x0 0xfdca8000 0x0 0x8000>;
++	};
+ 	pmucru: clock-controller@fdd00000 {
+ 		compatible = "rockchip,rk3568-pmucru";
+ 		reg = <0x0 0xfdd00000 0x0 0x1000>;
+@@ -303,6 +422,230 @@
+ 		status = "disabled";
+ 	};
+ 
++
++
++	pmu: power-management@fdd90000 {
++		compatible = "rockchip,rk3568-pmu", "syscon", "simple-mfd";
++		reg = <0x0 0xfdd90000 0x0 0x1000>;
++
++		power: power-controller {
++			compatible = "rockchip,rk3568-power-controller";
++			#power-domain-cells = <1>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "okay";
++
++			/* These power domains are grouped by VD_NPU */
++			pd_npu@RK3568_PD_NPU {
++				reg = <RK3568_PD_NPU>;
++				clocks = <&cru ACLK_NPU_PRE>,
++					 <&cru HCLK_NPU_PRE>,
++					 <&cru PCLK_NPU_PRE>;
++				pm_qos = <&qos_npu>;
++			};
++			/* These power domains are grouped by VD_GPU */
++			pd_gpu@RK3568_PD_GPU {
++				reg = <RK3568_PD_GPU>;
++				clocks = <&cru ACLK_GPU_PRE>,
++					 <&cru PCLK_GPU_PRE>;
++				pm_qos = <&qos_gpu>;
++			};
++			/* These power domains are grouped by VD_LOGIC */
++			pd_vi@RK3568_PD_VI {
++				reg = <RK3568_PD_VI>;
++				clocks = <&cru HCLK_VI>,
++					 <&cru PCLK_VI>;
++				pm_qos = <&qos_isp>,
++					 <&qos_vicap0>,
++					 <&qos_vicap1>;
++			};
++			pd_vo@RK3568_PD_VO {
++				reg = <RK3568_PD_VO>;
++				clocks = <&cru HCLK_VO>,
++					 <&cru PCLK_VO>,
++					 <&cru ACLK_VOP_PRE>;
++				pm_qos = <&qos_hdcp>,
++					 <&qos_vop_m0>,
++					 <&qos_vop_m1>;
++			};
++			pd_rga@RK3568_PD_RGA {
++				reg = <RK3568_PD_RGA>;
++				clocks = <&cru HCLK_RGA_PRE>,
++					 <&cru PCLK_RGA_PRE>;
++				pm_qos = <&qos_ebc>,
++					 <&qos_iep>,
++					 <&qos_jpeg_dec>,
++					 <&qos_jpeg_enc>,
++					 <&qos_rga_rd>,
++					 <&qos_rga_wr>;
++			};
++			pd_vpu@RK3568_PD_VPU {
++				reg = <RK3568_PD_VPU>;
++				clocks = <&cru HCLK_VPU_PRE>;
++				pm_qos = <&qos_vpu>;
++			};
++			pd_rkvdec@RK3568_PD_RKVDEC {
++				clocks = <&cru HCLK_RKVDEC_PRE>;
++				reg = <RK3568_PD_RKVDEC>;
++				pm_qos = <&qos_rkvdec>;
++			};
++			pd_rkvenc@RK3568_PD_RKVENC {
++				reg = <RK3568_PD_RKVENC>;
++				clocks = <&cru HCLK_RKVENC_PRE>;
++				pm_qos = <&qos_rkvenc_rd_m0>,
++					 <&qos_rkvenc_rd_m1>,
++					 <&qos_rkvenc_wr_m0>;
++			};
++			pd_pipe@RK3568_PD_PIPE {
++				reg = <RK3568_PD_PIPE>;
++				clocks = <&cru PCLK_PIPE>;
++				pm_qos = <&qos_pcie2x1>,
++					 <&qos_pcie3x1>,
++					 <&qos_pcie3x2>,
++					 <&qos_sata0>,
++					 <&qos_sata1>,
++					 <&qos_sata2>,
++					 <&qos_usb3_0>,
++					 <&qos_usb3_1>;
++			};
++		};
++	};
++	qos_gpu: qos@fe128000 {
++		compatible = "syscon";
++		reg = <0x0 0xfe128000 0x0 0x20>;
++	};
++
++	qos_rkvenc_rd_m0: qos@fe138080 {
++		compatible = "syscon";
++		reg = <0x0 0xfe138080 0x0 0x20>;
++	};
++
++	qos_rkvenc_rd_m1: qos@fe138100 {
++		compatible = "syscon";
++		reg = <0x0 0xfe138100 0x0 0x20>;
++	};
++
++	qos_rkvenc_wr_m0: qos@fe138180 {
++		compatible = "syscon";
++		reg = <0x0 0xfe138180 0x0 0x20>;
++	};
++
++	qos_isp: qos@fe148000 {
++		compatible = "syscon";
++		reg = <0x0 0xfe148000 0x0 0x20>;
++	};
++
++	qos_vicap0: qos@fe148080 {
++		compatible = "syscon";
++		reg = <0x0 0xfe148080 0x0 0x20>;
++	};
++
++	qos_vicap1: qos@fe148100 {
++		compatible = "syscon";
++		reg = <0x0 0xfe148100 0x0 0x20>;
++	};
++
++	qos_vpu: qos@fe150000 {
++		compatible = "syscon";
++		reg = <0x0 0xfe150000 0x0 0x20>;
++	};
++
++	qos_ebc: qos@fe158000 {
++		compatible = "syscon";
++		reg = <0x0 0xfe158000 0x0 0x20>;
++	};
++
++	qos_iep: qos@fe158100 {
++		compatible = "syscon";
++		reg = <0x0 0xfe158100 0x0 0x20>;
++	};
++
++	qos_jpeg_dec: qos@fe158180 {
++		compatible = "syscon";
++		reg = <0x0 0xfe158180 0x0 0x20>;
++	};
++
++	qos_jpeg_enc: qos@fe158200 {
++		compatible = "syscon";
++		reg = <0x0 0xfe158200 0x0 0x20>;
++	};
++
++	qos_rga_rd: qos@fe158280 {
++		compatible = "syscon";
++		reg = <0x0 0xfe158280 0x0 0x20>;
++	};
++
++	qos_rga_wr: qos@fe158300 {
++		compatible = "syscon";
++		reg = <0x0 0xfe158300 0x0 0x20>;
++	};
++
++	qos_npu: qos@fe180000 {
++		compatible = "syscon";
++		reg = <0x0 0xfe180000 0x0 0x20>;
++	};
++
++	qos_pcie2x1: qos@fe190000 {
++		compatible = "syscon";
++		reg = <0x0 0xfe190000 0x0 0x20>;
++	};
++
++	qos_pcie3x1: qos@fe190080 {
++		compatible = "syscon";
++		reg = <0x0 0xfe190080 0x0 0x20>;
++	};
++
++	qos_pcie3x2: qos@fe190100 {
++		compatible = "syscon";
++		reg = <0x0 0xfe190100 0x0 0x20>;
++	};
++
++	qos_sata0: qos@fe190200 {
++		compatible = "syscon";
++		reg = <0x0 0xfe190200 0x0 0x20>;
++	};
++
++	qos_sata1: qos@fe190280 {
++		compatible = "syscon";
++		reg = <0x0 0xfe190280 0x0 0x20>;
++	};
++
++	qos_sata2: qos@fe190300 {
++		compatible = "syscon";
++		reg = <0x0 0xfe190300 0x0 0x20>;
++	};
++
++	qos_usb3_0: qos@fe190380 {
++		compatible = "syscon";
++		reg = <0x0 0xfe190380 0x0 0x20>;
++	};
++
++	qos_usb3_1: qos@fe190400 {
++		compatible = "syscon";
++		reg = <0x0 0xfe190400 0x0 0x20>;
++	};
++
++	qos_rkvdec: qos@fe198000 {
++		compatible = "syscon";
++		reg = <0x0 0xfe198000 0x0 0x20>;
++	};
++
++	qos_hdcp: qos@fe1a8000 {
++		compatible = "syscon";
++		reg = <0x0 0xfe1a8000 0x0 0x20>;
++	};
++
++	qos_vop_m0: qos@fe1a8080 {
++		compatible = "syscon";
++		reg = <0x0 0xfe1a8080 0x0 0x20>;
++	};
++
++	qos_vop_m1: qos@fe1a8100 {
++		compatible = "syscon";
++		reg = <0x0 0xfe1a8100 0x0 0x20>;
++	};
++
++
+ 	sdmmc2: mmc@fe000000 {
+ 		compatible = "rockchip,rk3568-dw-mshc", "rockchip,rk3288-dw-mshc";
+ 		reg = <0x0 0xfe000000 0x0 0x4000>;
+@@ -710,7 +1053,51 @@
+ 		#pwm-cells = <3>;
+ 		status = "disabled";
+ 	};
++	usb2phy0: usb2-phy@fe8a0000 {
++		compatible = "rockchip,rk3568-usb2phy";
++		reg = <0x0 0xfe8a0000 0x0 0x10000>;
++		interrupts = <GIC_SPI 135 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&pmucru CLK_USBPHY0_REF>;
++		clock-names = "phyclk";
++		#clock-cells = <0>;
++		assigned-clocks = <&cru USB480M>;
++		assigned-clock-parents = <&usb2phy0>;
++		clock-output-names = "usb480m_phy";
++		rockchip,usbgrf = <&usb2phy0_grf>;
++		status = "disabled";
++
++		u2phy0_host: host-port {
++			#phy-cells = <0>;
++			status = "disabled";
++		};
++
++		u2phy0_otg: otg-port {
++			#phy-cells = <0>;
++			status = "disabled";
++		};
++	};
+ 
++	usb2phy1: usb2-phy@fe8b0000 {
++		compatible = "rockchip,rk3568-usb2phy";
++		reg = <0x0 0xfe8b0000 0x0 0x10000>;
++		interrupts = <GIC_SPI 136 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&pmucru CLK_USBPHY1_REF>;
++		clock-names = "phyclk";
++		#clock-cells = <0>;
++		rockchip,usbgrf = <&usb2phy1_grf>;
++		status = "disabled";
++
++		u2phy1_host: host-port {
++			#phy-cells = <0>;
++			status = "disabled";
++		};
++
++		u2phy1_otg: otg-port {
++			#phy-cells = <0>;
++			status = "disabled";
++		};
++	};
++	
+ 	pinctrl: pinctrl {
+ 		compatible = "rockchip,rk3568-pinctrl";
+ 		rockchip,grf = <&grf>;
+diff --git a/cmd/usb.c b/cmd/usb.c
+index 3d87376525..3d26fc1842 100644
+--- a/cmd/usb.c
++++ b/cmd/usb.c
+@@ -23,6 +23,7 @@
+ #include <part.h>
+ #include <usb.h>
+ 
++#include <asm/io.h>
+ #ifdef CONFIG_USB_STORAGE
+ static int usb_stor_curr_dev = -1; /* current device */
+ #endif
+@@ -577,6 +578,7 @@ static int do_usb_stop_keyboard(int force)
+ static void do_usb_start(void)
+ {
+ 	bootstage_mark_name(BOOTSTAGE_ID_USB_START, "usb_start");
++	printf("Inside do usb start function \n");
+ 
+ 	if (usb_init() < 0)
+ 		return;
+@@ -632,6 +634,10 @@ static int do_usb(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
+ 	int i;
+ 	extern char usb_started;
+ 
++	/*To make gpio high*/
++	writel(0x00600060,0xFDD60008);
++	writel(0x00600060,0xFDD60000);
++
+ 	if (argc < 2)
+ 		return CMD_RET_USAGE;
+ 
+diff --git a/include/configs/rk3568_common.h b/include/configs/rk3568_common.h
+index 25d7c5cc8f..36f77c3f16 100644
+--- a/include/configs/rk3568_common.h
++++ b/include/configs/rk3568_common.h
+@@ -9,6 +9,11 @@
+ #include "rockchip-common.h"
+ 
+ #define CONFIG_SYS_CBSIZE		1024
++#ifdef CONFIG_SUPPORT_USBPLUG
++#define CONFIG_SYS_TEXT_BASE		0x00000000
++#else
++#define CONFIG_SYS_TEXT_BASE		0x00a00000
++#endif
+ 
+ #define COUNTER_FREQUENCY               24000000
+ #define CONFIG_ROCKCHIP_STIMER_BASE	0xfdd1c020
+@@ -24,10 +29,14 @@
+ 
+ #define CONFIG_SYS_BOOTM_LEN		(64 << 20)	/* 64M */
+ 
++#define GICD_BASE			0xfd400000
+ #define CONFIG_SYS_SDRAM_BASE		0
+-#define SDRAM_MAX_SIZE			0xf0000000
++#define SDRAM_MAX_SIZE			0x80000000
+ 
+ #ifndef CONFIG_SPL_BUILD
++/* usb mass storage */
++#define CONFIG_USB_FUNCTION_MASS_STORAGE
++//#define CONFIG_ROCKUSB_G_DNL_PID	0x350a
+ #define ENV_MEM_LAYOUT_SETTINGS		\
+ 	"scriptaddr=0x00c00000\0"	\
+ 	"pxefile_addr_r=0x00e00000\0"	\
+@@ -44,4 +53,11 @@
+ 	BOOTENV
+ #endif
+ 
++/* rockchip ohci host driver
++#define CONFIG_USB_OHCI_NEW
++#define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS	2
++
++#define CONFIG_LIB_HW_RAND
++*/
++
+ #endif
+diff --git a/include/configs/rockchip-common.h b/include/configs/rockchip-common.h
+index ba7061a287..796e1dd076 100644
+--- a/include/configs/rockchip-common.h
++++ b/include/configs/rockchip-common.h
+@@ -14,14 +14,6 @@
+ 
+ #ifndef CONFIG_SPL_BUILD
+ 
+-/* First try to boot from SD (index 1), then eMMC (index 0) */
+-#if CONFIG_IS_ENABLED(CMD_MMC)
+-	#define BOOT_TARGET_MMC(func) \
+-		func(MMC, mmc, 1) \
+-		func(MMC, mmc, 0)
+-#else
+-	#define BOOT_TARGET_MMC(func)
+-#endif
+ 
+ #if CONFIG_IS_ENABLED(CMD_NVME)
+ 	#define BOOT_TARGET_NVME(func) func(NVME, nvme, 0)
+@@ -53,20 +45,30 @@
+ 	#define BOOT_TARGET_SF(func)
+ #endif
+ 
++
++/* First try to boot from SD (index 1), then eMMC (index 0) */
++#if CONFIG_IS_ENABLED(CMD_MMC)
++	#define BOOT_TARGET_MMC(func) \
++		func(MMC, mmc, 1) \
++		func(MMC, mmc, 0)
++#else
++	#define BOOT_TARGET_MMC(func)
++#endif
++
+ #ifdef CONFIG_ROCKCHIP_RK3399
+ #define BOOT_TARGET_DEVICES(func) \
+-	BOOT_TARGET_MMC(func) \
+ 	BOOT_TARGET_NVME(func) \
+ 	BOOT_TARGET_USB(func) \
+ 	BOOT_TARGET_PXE(func) \
+ 	BOOT_TARGET_DHCP(func) \
+-	BOOT_TARGET_SF(func)
++	BOOT_TARGET_SF(func)\
++	BOOT_TARGET_MMC(func) 
+ #else
+ #define BOOT_TARGET_DEVICES(func) \
+-	BOOT_TARGET_MMC(func) \
+ 	BOOT_TARGET_USB(func) \
+ 	BOOT_TARGET_PXE(func) \
+-	BOOT_TARGET_DHCP(func)
++	BOOT_TARGET_DHCP(func) \
++	BOOT_TARGET_MMC(func)
+ #endif
+ 
+ #ifdef CONFIG_ARM64
+diff --git a/include/dt-bindings/power/rk3568-power.h b/include/dt-bindings/power/rk3568-power.h
+new file mode 100644
+index 0000000000..6cc1af1a9d
+--- /dev/null
++++ b/include/dt-bindings/power/rk3568-power.h
+@@ -0,0 +1,32 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef __DT_BINDINGS_POWER_RK3568_POWER_H__
++#define __DT_BINDINGS_POWER_RK3568_POWER_H__
++
++/* VD_CORE */
++#define RK3568_PD_CPU_0		0
++#define RK3568_PD_CPU_1		1
++#define RK3568_PD_CPU_2		2
++#define RK3568_PD_CPU_3		3
++#define RK3568_PD_CORE_ALIVE	4
++
++/* VD_PMU */
++#define RK3568_PD_PMU		5
++
++/* VD_NPU */
++#define RK3568_PD_NPU		6
++
++/* VD_GPU */
++#define RK3568_PD_GPU		7
++
++/* VD_LOGIC */
++#define RK3568_PD_VI		8
++#define RK3568_PD_VO		9
++#define RK3568_PD_RGA		10
++#define RK3568_PD_VPU		11
++#define RK3568_PD_CENTER	12
++#define RK3568_PD_RKVDEC	13
++#define RK3568_PD_RKVENC	14
++#define RK3568_PD_PIPE		15
++#define RK3568_PD_LOGIC_ALIVE	16
++
++#endif
+-- 
+2.25.1
+

@@ -1,0 +1,49 @@
+From 044845b46a961e0ada8e95c5a62534740f6b4e93 Mon Sep 17 00:00:00 2001
+From: shaik-altran <fairozshaik4c9@gmail.com>
+Date: Mon, 18 Apr 2022 22:43:02 +0530
+Subject: [PATCH 2/2] DFU_Patch
+
+---
+ board/rockchip/evb_rk3568/evb_rk3568.c | 29 ++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+diff --git a/board/rockchip/evb_rk3568/evb_rk3568.c b/board/rockchip/evb_rk3568/evb_rk3568.c
+index c2fdf95d9a..65943e82db 100644
+--- a/board/rockchip/evb_rk3568/evb_rk3568.c
++++ b/board/rockchip/evb_rk3568/evb_rk3568.c
+@@ -2,3 +2,32 @@
+ /*
+  * (C) Copyright 2021 Rockchip Electronics Co., Ltd
+  */
++
++#include <dfu.h>
++#include <env.h>
++
++
++/* ALT_INFO Macro Function below added for DFU_ALT_INFO */
++#ifdef CONFIG_SET_DFU_ALT_INFO
++#define CONFIG_DFU_ALT_BOOT_SD \
++        "mmc 1=idbloader-img raw 0x40 0x2000;u-boot-itb raw 0x4000 0x2000\0"
++#define CONFIG_DFU_ALT_BOOT_EMMC \
++        "mmc 0=idbloader-img raw 0x40 0x2000;u-boot-itb raw 0x4000 0x2000\0"
++
++void set_dfu_alt_info(char *interface, char *devstr)
++{
++        char *alt_info;
++        struct mmc *mmc;
++        int dev_num = 0;
++        alt_info = env_get("dfu_alt_info");
++        if (alt_info)
++                return;
++        dev_num = simple_strtoul(devstr ? devstr:"0", NULL, 10);
++        mmc = find_mmc_device(dev_num);
++        if (!mmc || mmc_init(mmc))
++                return;
++        alt_info = IS_SD(mmc) ? CONFIG_DFU_ALT_BOOT_SD : CONFIG_DFU_ALT_BOOT_EMMC;
++        env_set("dfu_alt_info", alt_info);
++}
++#endif
++
+-- 
+2.25.1
+
