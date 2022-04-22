@@ -51,7 +51,7 @@ U-BOOT_DEFCONFIG_FILES := \
 
 U-BOOT_PATCHES := \
 	$(ROOT)/build/0001-2USB_working.patch \
-       #	$(ROOT)/build/0002-DFU_Patch.patch
+        $(ROOT)/build/0002-DFU_Patch.patch
 
 
 .PHONY: u-boot
