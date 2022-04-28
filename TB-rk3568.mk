@@ -57,7 +57,7 @@ U-BOOT_PATCHES := \
 .PHONY: u-boot
 u-boot: rkbin
 	cd $(U-BOOT_PATH) && \
-		git reset --hard refs/tags/v2022.01 && \
+		git reset --hard refs/tags/v2022.04 && \
 		git clean -fdx
 		
 	cd $(U-BOOT_PATH) && \
